@@ -1,0 +1,203 @@
+/**
+ * @fileoverview Firestore Security Rules for the antonbeski application.
+ *
+ * @description
+ * This ruleset defines the access control policies for the application's Firestore database.
+ * It follows a security model that strictly separates public, read-only content from private,
+ * user-owned data.
+ *
+ * Core Philosophy:
+ * The security model is dual-faceted:
+ * 1. User-Private Data: All data created by and for a specific user is stored under the `/users/{userId}`
+ *    path. Access to this data is strictly limited to the authenticated owner of that data tree.
+ * 2. Public Taxonomy Data: The academic structure of subjects, chapters, topics, and questions
+ *    is stored under the `/subjects/{subjectId}` path. This data is considered curated and is
+ *    publicly readable by any user, but cannot be modified by clients.
+ *
+ * Data Structure:
+ * - `/users/{userId}`: Root for all data belonging to a single user.
+ *   - `.../pdfDocuments/{pdfDocumentId}`: PDF documents uploaded by the user.
+ *   - `.../userAnswers/{userAnswerId}`: User's specific answers to questions.
+ * - `/subjects/{subjectId}`: Root for the public, read-only content taxonomy.
+ *   - `.../chapters/{chapterId}`
+ *   - `.../topics/{topicId}`
+ *   - `.../questions/{questionId}`
+ *
+ * Key Security Decisions:
+ * - User Enumeration is Disallowed: Listing the top-level `/users` collection is prohibited to
+ *   protect user privacy.
+ * - Strict Ownership: All write operations within a user's data tree (`/users/{userId}`) are
+ *   gated by an ownership check, ensuring users can only modify their own data.
+ * - Read-Only Public Content: The entire `/subjects` collection tree is read-only for all clients.
+ *   This prevents unauthorized modification of the core academic content and assumes it is managed
+ *   by trusted backend processes or administrators directly.
+ * - Denormalization for Authorization: User-specific documents like `PdfDocument` and `UserAnswer`
+ *   contain a `userId` field. The rules enforce that this field matches the `userId` in the path,
+ *   ensuring data integrity and enabling simple, performant authorization checks without `get()` calls.
+ * - Structural Segregation: The separation of private data (`/users`) from public data (`/subjects`)
+ *   into distinct top-level collections is a deliberate choice. This provides a clear, secure, and
+ *   performant boundary for access control, especially for list operations.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the primary function for enforcing data ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * A robust check for update and delete operations. Ensures the user is the owner
+     * AND that the document they are trying to modify actually exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates that the `id` field within a user's profile document matches their UID
+     * upon creation. This establishes the unchangeable link between the document and the user.
+     */
+    function hasValidUserIdsOnCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Validates that a user-owned document contains a `userId` field that correctly
+     * points back to the user defined in the path upon creation.
+     */
+    function hasValidOwnerFieldOnCreate(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Ensures critical, immutable fields (like ownership IDs) are not changed during an update.
+     * It allows partial updates by only checking the field if it's present in the request data.
+     */
+    function areOwnerFieldsImmutable() {
+      return request.resource.data.userId == resource.data.userId && request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * For UserAnswer creation, validates that both the `userId` and `questionId` in the
+     * document data match the corresponding parameters in the document path.
+     */
+    function hasValidAnswerIdsOnCreate(userId, questionId) {
+      return request.resource.data.userId == userId && request.resource.data.questionId == questionId;
+    }
+
+    /**
+     * Ensures the `userId` and `questionId` fields on a UserAnswer document are immutable.
+     */
+    function areAnswerFieldsImmutable() {
+      return request.resource.data.userId == resource.data.userId && request.resource.data.questionId == resource.data.questionId;
+    }
+
+    // ------------------------------------------------------------------------
+    // User Data Rules (/users)
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow A signed-in user (UID 'user123') can (create) their own profile document at `/users/user123`.
+     * @deny A user ('user123') cannot (get) or (list) other user profiles like `/users/user456`.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && hasValidUserIdsOnCreate(userId);
+      allow update: if isExistingOwner(userId) && areOwnerFieldsImmutable();
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Controls access to PDF documents owned by a user.
+       * @path /users/{userId}/pdfDocuments/{pdfDocumentId}
+       * @allow A user ('user123') can (create) and (list) their own documents under `/users/user123/pdfDocuments`.
+       * @deny A user ('user123') cannot (get) a document they don't own, like `/users/user456/pdfDocuments/doc789`.
+       * @principle Enforces document ownership for all operations and validates relational integrity.
+       */
+      match /pdfDocuments/{pdfDocumentId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId);
+        allow update: if isExistingOwner(userId) && areOwnerFieldsImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description Controls access to a user's specific answer to a question from a PDF.
+       * @path /users/{userId}/pdfDocuments/{pdfDocumentId}/questions/{questionId}/userAnswers/{userAnswerId}
+       * @allow A user ('user123') can (create) their own answer at `/users/user123/.../userAnswers/ans456`.
+       * @deny A user ('user123') cannot (update) an answer belonging to another user (`/users/user456/...`).
+       * @principle Enforces strict ownership based on the path and validates denormalized IDs for integrity.
+       */
+      match /pdfDocuments/{pdfDocumentId}/questions/{questionId}/userAnswers/{userAnswerId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && hasValidAnswerIdsOnCreate(userId, questionId);
+        allow update: if isExistingOwner(userId) && areAnswerFieldsImmutable();
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // Public Taxonomy Rules (/subjects)
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to the public, read-only taxonomy of subjects, chapters, topics, and questions.
+     * @path /subjects/{subjectId} and all nested subcollections.
+     * @allow Any client, signed-in or not, can (get) or (list) any document within the `/subjects` tree.
+     * @deny Any client is denied all write operations ((create), (update), (delete)) to this data.
+     * @principle Secures curated content by making it publicly readable but client-side immutable.
+     */
+    match /subjects/{subjectId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+
+      match /chapters/{chapterId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+
+        match /topics/{topicId} {
+          allow get: if true;
+          allow list: if true;
+          allow create: if false;
+          allow update: if false;
+          allow delete: if false;
+
+          match /questions/{questionId} {
+            allow get: if true;
+            allow list: if true;
+            allow create: if false;
+            allow update: if false;
+            allow delete: if false;
+          }
+        }
+      }
+    }
+  }
+}

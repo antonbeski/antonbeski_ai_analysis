@@ -1,0 +1,391 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the antonbeski application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "createdAt"
+      ]
+    },
+    "PdfDocument": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PdfDocument",
+      "type": "object",
+      "description": "Represents a PDF document that has been ingested into the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the PdfDocument entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the PDF document."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Timestamp indicating when the PDF document was uploaded.",
+          "format": "date-time"
+        },
+        "fileSize": {
+          "type": "number",
+          "description": "Size of the PDF document file in bytes."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N PdfDocument)"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "uploadDate",
+        "fileSize",
+        "userId"
+      ]
+    },
+    "Question": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Question",
+      "type": "object",
+      "description": "Represents a question extracted from a PDF document.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Question entity."
+        },
+        "text": {
+          "type": "string",
+          "description": "The actual text of the question."
+        },
+        "difficulty": {
+          "type": "number",
+          "description": "Difficulty level of the question (e.g., 1-10)."
+        },
+        "pdfDocumentId": {
+          "type": "string",
+          "description": "Reference to PdfDocument. (Relationship: PdfDocument 1:N Question)"
+        },
+        "topicId": {
+          "type": "string",
+          "description": "Reference to Topic. (Relationship: Topic 1:N Question)"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "difficulty",
+        "pdfDocumentId",
+        "topicId"
+      ]
+    },
+    "Topic": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Topic",
+      "type": "object",
+      "description": "Represents a topic in the concept graph / topic taxonomy.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Topic entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the topic."
+        },
+        "chapterId": {
+          "type": "string",
+          "description": "Reference to Chapter. (Relationship: Chapter 1:N Topic)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "chapterId"
+      ]
+    },
+    "Chapter": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Chapter",
+      "type": "object",
+      "description": "Represents a chapter in the concept graph / topic taxonomy.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Chapter entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the chapter."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to Subject. (Relationship: Subject 1:N Chapter)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "subjectId"
+      ]
+    },
+    "Subject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents a subject in the concept graph / topic taxonomy.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subject entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the subject."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "UserAnswer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAnswer",
+      "type": "object",
+      "description": "Represents a user's answer to a specific question.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserAnswer entity."
+        },
+        "questionId": {
+          "type": "string",
+          "description": "Reference to Question. (Relationship: Question 1:N UserAnswer)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N UserAnswer)"
+        },
+        "answer": {
+          "type": "string",
+          "description": "The user's answer to the question."
+        },
+        "isCorrect": {
+          "type": "boolean",
+          "description": "Indicates whether the user's answer was correct."
+        },
+        "timeTaken": {
+          "type": "number",
+          "description": "Time taken by the user to answer the question in seconds."
+        },
+        "confidenceLevel": {
+          "type": "number",
+          "description": "User's confidence level in their answer (e.g., 1-5)."
+        },
+        "attemptDate": {
+          "type": "string",
+          "description": "Timestamp indicating when the question was attempted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "questionId",
+        "userId",
+        "answer",
+        "isCorrect",
+        "timeTaken",
+        "confidenceLevel",
+        "attemptDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.  Uses path-based ownership for private user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/pdfDocuments/{pdfDocumentId}",
+        "definition": {
+          "entityName": "PdfDocument",
+          "schema": {
+            "$ref": "#/backend/entities/PdfDocument"
+          },
+          "description": "Stores PDF documents uploaded by users. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "pdfDocumentId",
+              "description": "The unique identifier for the PDF document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": {
+            "$ref": "#/backend/entities/Subject"
+          },
+          "description": "Stores information about subjects in the topic taxonomy.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier for the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}/chapters/{chapterId}",
+        "definition": {
+          "entityName": "Chapter",
+          "schema": {
+            "$ref": "#/backend/entities/Chapter"
+          },
+          "description": "Stores information about chapters within a subject.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier for the subject."
+            },
+            {
+              "name": "chapterId",
+              "description": "The unique identifier for the chapter."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}/chapters/{chapterId}/topics/{topicId}",
+        "definition": {
+          "entityName": "Topic",
+          "schema": {
+            "$ref": "#/backend/entities/Topic"
+          },
+          "description": "Stores information about topics within a chapter.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier for the subject."
+            },
+            {
+              "name": "chapterId",
+              "description": "The unique identifier for the chapter."
+            },
+            {
+              "name": "topicId",
+              "description": "The unique identifier for the topic."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}/chapters/{chapterId}/topics/{topicId}/questions/{questionId}",
+        "definition": {
+          "entityName": "Question",
+          "schema": {
+            "$ref": "#/backend/entities/Question"
+          },
+          "description": "Stores questions associated with a specific topic.  Denormalizes `topicId`.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier for the subject."
+            },
+            {
+              "name": "chapterId",
+              "description": "The unique identifier for the chapter."
+            },
+            {
+              "name": "topicId",
+              "description": "The unique identifier for the topic."
+            },
+            {
+              "name": "questionId",
+              "description": "The unique identifier for the question."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/pdfDocuments/{pdfDocumentId}/questions/{questionId}/userAnswers/{userAnswerId}",
+        "definition": {
+          "entityName": "UserAnswer",
+          "schema": {
+            "$ref": "#/backend/entities/UserAnswer"
+          },
+          "description": "Stores user answers to questions.  Denormalizes `userId`, `questionId` and `pdfDocumentId` for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "pdfDocumentId",
+              "description": "The unique identifier for the PDF document."
+            },
+            {
+              "name": "questionId",
+              "description": "The unique identifier for the question."
+            },
+            {
+              "name": "userAnswerId",
+              "description": "The unique identifier for the user answer."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, DBAC, and support secure list operations (QAPs). It leverages path-based ownership for user-specific data and denormalization to avoid `get()` calls in security rules. The taxonomy of subjects, chapters, and topics are segregated to ensure each level has its own security posture. The UserAnswer subcollection uses path-based ownership, nesting under the User, Question, and PDF document. This structure provides a clear hierarchy and supports efficient data retrieval and security rule implementation. Explicit denormalization of the `userId` and `pdfDocumentId` in the UserAnswer collection is critical for authorization independence, ensuring that access control can be enforced at the UserAnswer level without needing to fetch data from parent documents. Since questions are linked to PDF Documents and Topics, and UserAnswers are linked to Users and Questions, a deeply nested structure is used to explicitly represent these relationships."
+  }
+}
