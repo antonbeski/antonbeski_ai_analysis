@@ -1,8 +1,6 @@
 import { StatsCards } from "@/components/dashboard/stats-cards";
-import { DailyProgressChart } from "@/components/dashboard/daily-progress-chart";
-import { AccuracyChart } from "@/components/dashboard/accuracy-chart";
-import { PerformanceSummary } from "@/components/dashboard/performance-summary";
-import { performanceHistory, accuracyData, aiAnalysis } from "@/lib/data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, BrainCircuit } from "lucide-react";
 
 export default function DashboardPage() {
   return (
@@ -13,14 +11,29 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <StatsCards />
         <div className="grid gap-4 md:grid-cols-2">
-          <DailyProgressChart data={performanceHistory} />
-          <AccuracyChart data={accuracyData} />
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Daily Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-12">
+                        <BarChart className="w-16 h-16 mb-4" />
+                        <p>Your daily progress chart will appear here once you complete a few practice sessions.</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">AI Performance Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-12">
+                        <BrainCircuit className="w-16 h-16 mb-4" />
+                        <p>Your personalized AI-driven performance analysis will be displayed here.</p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
-        <PerformanceSummary
-          strengths={aiAnalysis.strengths}
-          weaknesses={aiAnalysis.weaknesses}
-          suggestedTopics={aiAnalysis.suggestedTopics}
-        />
       </div>
     </div>
   );

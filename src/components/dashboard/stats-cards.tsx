@@ -12,8 +12,8 @@ export function StatsCards() {
           <HelpCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">1,234</div>
-          <p className="text-xs text-muted-foreground">+50 from last week</p>
+          <div className="text-2xl font-bold">0</div>
+          <p className="text-xs text-muted-foreground">No sessions completed yet</p>
         </CardContent>
       </Card>
       <Card>
@@ -22,8 +22,8 @@ export function StatsCards() {
           <CheckCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">78.5%</div>
-          <p className="text-xs text-muted-foreground">+2.1% from last month</p>
+          <div className="text-2xl font-bold">0%</div>
+          <p className="text-xs text-muted-foreground">Practice to see your accuracy</p>
         </CardContent>
       </Card>
       <Card>
@@ -32,8 +32,8 @@ export function StatsCards() {
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">1m 45s</div>
-          <p className="text-xs text-muted-foreground">-5s from last week</p>
+          <div className="text-2xl font-bold">0s</div>
+          <p className="text-xs text-muted-foreground">Answer questions to track time</p>
         </CardContent>
       </Card>
     </div>
