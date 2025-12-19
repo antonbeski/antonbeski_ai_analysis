@@ -60,12 +60,11 @@ Topic Taxonomy: {{{topicTaxonomy}}}
 
 Based on the data, provide the following:
 
-1.  Overall Trend: A short summary of the student\'s overall performance trend (e.g., improving, declining, stable).
+1.  Overall Trend: A short summary of the student's overall performance trend (e.g., improving, declining, stable).
 2.  Difficult Topics: A list of topics that the student struggles with despite practice, including the average score and number of attempts for each topic.
 3.  Suggested Actions: Suggestions for actions the student can take to improve.
 
-Output in JSON format:
-{{outputSchema}}`,
+Output your response in the specified JSON format.`,
 });
 
 const detectImprovementOverTimeFlow = ai.defineFlow(

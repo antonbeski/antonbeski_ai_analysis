@@ -1,10 +1,10 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/generate-practice-questions.ts';
-import '@/ai/flows/generate-step-by-step-explanations.ts';
-import '@/ai/flows/identify-conceptual-errors.ts';
-import '@/ai/flows/detect-improvement-over-time.ts';
-import '@/ai/flows/analyze-user-performance.ts';
-import '@/ai/flows/provide-time-strategy-insights.ts';
-import '@/ai/flows/generate-visual-aid.ts';
+import '@/ai/flows/generate-practice-questions';
+import '@/ai/flows/generate-step-by-step-explanations';
+import '@/ai/flows/identify-conceptual-errors';
+import '@/ai/flows/detect-improvement-over-time';
+import '@/ai/flows/analyze-user-performance';
+import '@/ai/flows/provide-time-strategy-insights';
+import '@/ai/flows/generate-visual-aid';

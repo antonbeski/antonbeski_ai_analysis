@@ -60,8 +60,7 @@ const prompt = ai.definePrompt({
   Correct Answer: {{{correctAnswer}}}
   Solution: {{{solution}}}
 
-  Error Type: {{errorType}}
-  Explanation: {{explanation}}`,
+  Analyze the provided information and determine the most likely error type and provide a brief explanation.`,
 });
 
 const identifyConceptualErrorsFlow = ai.defineFlow(

@@ -40,7 +40,15 @@ async function getRelevantTextChunks(input: GeneratePracticeQuestionsInput): Pro
 
 const generatePracticeQuestionsPrompt = ai.definePrompt({
   name: 'generatePracticeQuestionsPrompt',
-  input: {schema: GeneratePracticeQuestionsInputSchema},
+  input: {schema: z.object({
+    subject: z.string(),
+    chapter: z.string(),
+    topic: z.string(),
+    subtopic: z.string(),
+    questionType: z.string(),
+    userHistoryAnalysis: z.string().optional(),
+    relevantTextChunks: z.string(),
+  })},
   output: {schema: GeneratePracticeQuestionsOutputSchema},
   prompt: `You are an expert educator creating practice questions for JEE students.
 
