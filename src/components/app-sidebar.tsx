@@ -8,7 +8,6 @@ import {
   Lightbulb,
   ImageIcon,
   Settings,
-  UploadCloud,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,7 +28,6 @@ const navItems = [
   { href: '/practice', icon: Lightbulb, label: 'Practice' },
   { href: '/history', icon: History, label: 'History' },
   { href: '/visual-aid', icon: ImageIcon, label: 'Visual Aid' },
-  { href: '/upload', icon: UploadCloud, label: 'Upload PDF' },
 ];
 
 const settingsItem = { href: '/settings', icon: Settings, label: 'Settings' };
@@ -40,7 +38,7 @@ export function AppSidebar() {
   const { isAdmin } = useAuthContext();
 
   const visibleNavItems = navItems.filter(item => {
-    if (item.href === '/upload' || item.href === '/practice') {
+    if (item.href === '/practice') {
       return isAdmin;
     }
     return true;
