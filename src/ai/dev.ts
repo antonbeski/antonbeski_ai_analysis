@@ -7,3 +7,4 @@ import '@/ai/flows/identify-conceptual-errors.ts';
 import '@/ai/flows/detect-improvement-over-time.ts';
 import '@/ai/flows/analyze-user-performance.ts';
 import '@/ai/flows/provide-time-strategy-insights.ts';
+import '@/ai/flows/generate-visual-aid.ts';
