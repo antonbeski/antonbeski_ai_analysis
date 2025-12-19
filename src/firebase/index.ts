@@ -1,30 +1,47 @@
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { firebaseConfig as localFirebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp, FirebaseApp, FirebaseOptions } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore'
+
+const getFirebaseConfig = (): FirebaseOptions => {
+  const serverConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  };
+
+  // If the essential environment variables are present, use them.
+  if (serverConfig.apiKey && serverConfig.projectId) {
+    return serverConfig;
+  }
+  
+  // Fallback for when environment variables are not set.
+  // This is useful for local development without a .env.local file.
+  if (localFirebaseConfig.projectId && localFirebaseConfig.apiKey) {
+      return localFirebaseConfig;
+  }
+
+  // If no config is found, throw an error.
+  throw new Error("Firebase config is missing. Please set up your environment variables or firebase/config.ts file.");
+}
+
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
   if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
-    let firebaseApp;
-    try {
-      // Attempt to initialize via Firebase App Hosting environment variables
-      firebaseApp = initializeApp();
-    } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
+    const firebaseConfig = getFirebaseConfig();
+
+    // Ensure config is not empty before initializing
+    if (!firebaseConfig.projectId) {
+        throw new Error("Firebase config is missing. Please set up your environment variables or firebase/config.ts file.");
     }
 
+    const firebaseApp = initializeApp(firebaseConfig);
     return getSdks(firebaseApp);
   }
 
