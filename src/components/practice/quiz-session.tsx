@@ -8,10 +8,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle2, XCircle, ChevronRight, ChevronsRight, Sparkles, Loader2 } from 'lucide-react';
+import { CheckCircle2, XCircle, ChevronRight, ChevronsRight, Sparkles, Loader2, Image as ImageIcon } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { generateStepByStepExplanation } from '@/ai/flows/generate-step-by-step-explanations';
 import { generatePracticeQuestions, GeneratePracticeQuestionsInput } from '@/ai/flows/generate-practice-questions';
+import { generateVisualAid } from '@/ai/flows/generate-visual-aid';
 import { Skeleton } from '../ui/skeleton';
 import { subjects } from '@/lib/data';
 import type { PracticeQuestion, Topic, Chapter, Subject } from '@/lib/types';
@@ -49,6 +50,10 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
   const [isGeneratingExplanation, setIsGeneratingExplanation] = useState(false);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [visualAidImage, setVisualAidImage] = useState<string | null>(null);
+  const [isGeneratingVisualAid, setIsGeneratingVisualAid] = useState(false);
+  const [visualAidError, setVisualAidError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchQuestion = async () => {
@@ -97,6 +102,14 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
     fetchQuestion();
   }, [topicId]);
 
+  const resetQuizState = () => {
+    setSelectedAnswer(null);
+    setIsAnswered(false);
+    setExplanation(null);
+    setVisualAidImage(null);
+    setVisualAidError(null);
+  }
+
   if (isGeneratingQuestions) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-center p-4">
@@ -141,16 +154,14 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
-      setExplanation(null);
+      resetQuizState();
     } else {
       onFinish();
     }
   };
   
-  const handleGenerateExplanation = async () => {
-    if (!explanation && !isGeneratingExplanation) {
+  const handleGenerateExplanation = async (isOpen: boolean) => {
+    if (isOpen && !explanation && !isGeneratingExplanation) {
       setIsGeneratingExplanation(true);
       try {
         const result = await generateStepByStepExplanation({
@@ -166,6 +177,21 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
       }
     }
   }
+
+  const handleGenerateVisualAid = async () => {
+    if (!question) return;
+    setIsGeneratingVisualAid(true);
+    setVisualAidError(null);
+    setVisualAidImage(null);
+    try {
+      const result = await generateVisualAid({ description: `A visual diagram for the following problem: ${question.question}` });
+      setVisualAidImage(result.imageDataUri);
+    } catch (e: any) {
+      setVisualAidError(e.message || 'An unexpected error occurred while generating the visual aid.');
+    } finally {
+      setIsGeneratingVisualAid(false);
+    }
+  };
 
   return (
     <div className="p-4 md:p-8 flex justify-center">
@@ -215,7 +241,7 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
           )}
 
           {isAnswered && (
-            <Accordion type="single" collapsible onValueChange={handleGenerateExplanation}>
+            <Accordion type="single" collapsible onValueChange={(value) => handleGenerateExplanation(value === 'solution')}>
               <AccordionItem value="solution">
                 <AccordionTrigger>View AI-Powered Explanation</AccordionTrigger>
                 <AccordionContent>
@@ -232,7 +258,42 @@ export function QuizSession({ topicId, onFinish }: QuizSessionProps) {
                                 <Skeleton className="h-4 w-4/6" />
                             </div>
                         )}
-                        {explanation && <p>{explanation}</p>}
+                        {explanation && (
+                          <div className="space-y-4">
+                            <p>{explanation}</p>
+                            <Button variant="outline" size="sm" onClick={handleGenerateVisualAid} disabled={isGeneratingVisualAid}>
+                                {isGeneratingVisualAid ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                )}
+                                {isGeneratingVisualAid ? 'Generating...' : 'Generate Visual Diagram'}
+                            </Button>
+                             {visualAidError && (
+                                <Alert variant="destructive">
+                                    <XCircle className="h-4 w-4" />
+                                    <AlertTitle>Error</AlertTitle>
+                                    <AlertDescription>{visualAidError}</AlertDescription>
+                                </Alert>
+                            )}
+                            {isGeneratingVisualAid && (
+                              <div className='flex flex-col items-center justify-center pt-4'>
+                                <Skeleton className="h-[250px] w-[250px] rounded-lg" />
+                                <p className="text-muted-foreground text-sm mt-2">Generating diagram...</p>
+                              </div>
+                            )}
+                            {visualAidImage && (
+                              <div className="relative aspect-square w-full max-w-md mx-auto mt-4">
+                                <Image
+                                  src={visualAidImage}
+                                  alt="Generated visual aid for the question"
+                                  fill
+                                  className="rounded-lg object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                     </div>
                   </div>
                 </AccordionContent>

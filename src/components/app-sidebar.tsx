@@ -26,7 +26,6 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/practice', icon: Lightbulb, label: 'Practice' },
   { href: '/history', icon: History, label: 'History' },
-  { href: '/visual-aid', icon: ImageIcon, label: 'Visual Aid' },
 ];
 
 const settingsItem = { href: '/settings', icon: Settings, label: 'Settings' };
