@@ -8,6 +8,7 @@ import {
   Lightbulb,
   ImageIcon,
   Settings,
+  UploadCloud,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/practice', icon: Lightbulb, label: 'Practice' },
   { href: '/history', icon: History, label: 'History' },
   { href: '/visual-aid', icon: ImageIcon, label: 'Visual Aid' },
+  { href: '/upload', icon: UploadCloud, label: 'Upload PDF' },
 ];
 
 const settingsItem = { href: '/settings', icon: Settings, label: 'Settings' };

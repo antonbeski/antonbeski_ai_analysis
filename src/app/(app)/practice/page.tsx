@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { QuizStart } from '@/components/practice/quiz-start';
 import { QuizSession } from '@/components/practice/quiz-session';
+import { AuthContext } from '@/context/auth-context';
+import { AuthDialog } from '@/components/auth-dialog';
 
 type QuizState = 'not_started' | 'in_progress' | 'finished';
 
 export default function PracticePage() {
+  const { isAuthenticated } = useContext(AuthContext);
   const [quizState, setQuizState] = useState<QuizState>('not_started');
   const [currentTopic, setCurrentTopic] = useState<string | null>(null);
 
@@ -22,6 +25,10 @@ export default function PracticePage() {
   const handleRestart = () => {
     setQuizState('not_started');
     setCurrentTopic(null);
+  }
+
+  if (!isAuthenticated) {
+    return <AuthDialog />;
   }
 
   return (
