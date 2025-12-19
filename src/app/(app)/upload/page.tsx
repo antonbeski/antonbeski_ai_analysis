@@ -7,7 +7,6 @@ import { processPdf } from '@/ai/flows/process-pdf';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuthContext } from '@/context/auth-context';
-import { AuthDialog } from '@/components/auth-dialog';
 
 export default function UploadPage() {
     const { isAdmin, isLoading: isAuthLoading } = useAuthContext();
@@ -47,7 +46,11 @@ export default function UploadPage() {
     }
     
     if (!isAdmin) {
-        return <AuthDialog />;
+         return (
+          <div className="flex h-full w-full items-center justify-center">
+            <p className='text-muted-foreground'>This page is for admins only.</p>
+          </div>
+        );
     }
 
     return (

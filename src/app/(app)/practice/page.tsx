@@ -35,10 +35,17 @@ export default function PracticePage() {
       </div>
     );
   }
-
+  
+  // This page is admin-only, but with the new auth flow, isAdmin will always be true.
+  // We'll keep the check in case you want to add viewer roles later.
   if (!isAdmin) {
-    return <AuthDialog />;
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <p className='text-muted-foreground'>This page is for admins only.</p>
+      </div>
+    );
   }
+
 
   return (
     <div className="flex-1">
