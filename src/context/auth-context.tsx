@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
 });
 
-const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'Mrads@007';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'an10*beski';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
