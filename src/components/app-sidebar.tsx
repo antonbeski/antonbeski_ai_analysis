@@ -21,7 +21,6 @@ import {
 import { Logo } from '@/components/logo';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Button } from './ui/button';
-import { useAuthContext } from '@/context/auth-context';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -35,14 +34,6 @@ const settingsItem = { href: '/settings', icon: Settings, label: 'Settings' };
 export function AppSidebar() {
   const pathname = usePathname();
   const { isMobile } = useSidebar();
-  const { isAdmin } = useAuthContext();
-
-  const visibleNavItems = navItems.filter(item => {
-    if (item.href === '/practice') {
-      return isAdmin;
-    }
-    return true;
-  });
 
   return (
     <Sidebar>
@@ -55,7 +46,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {visibleNavItems.map((item) => (
+          {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Button
                 variant={pathname === item.href ? 'secondary' : 'ghost'}
