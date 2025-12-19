@@ -1,27 +1,82 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, FileCheck, FileX, Loader2 } from "lucide-react";
+import { processPdf } from '@/ai/flows/process-pdf';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function UploadPage() {
-  return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <h2 className="text-3xl font-bold tracking-tight font-headline">
-        Upload PDFs
-      </h2>
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>PDF Data Ingestion</CardTitle>
-          <CardDescription>Parse and index JEE PDFs (questions and solutions).</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-12 border-2 border-dashed rounded-lg">
-            <UploadCloud className="w-16 h-16 mb-4" />
-            <p>Drag and drop your PDF files here or click to browse.</p>
-            <p className="text-xs mt-2">This feature is available only to the administrator.</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsProcessing(true);
+        setResult(null);
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+
+            const response = await processPdf({
+                fileName: file.name,
+                fileContent: buffer.toString('base64'),
+            });
+
+            setResult({ success: true, message: `Successfully processed ${file.name}. ${response.message}` });
+        } catch (error: any) {
+            setResult({ success: false, message: error.message || 'An unexpected error occurred during processing.' });
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    return (
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+            <h2 className="text-3xl font-bold tracking-tight font-headline">
+                Upload PDFs
+            </h2>
+            <Card className="mt-4">
+                <CardHeader>
+                    <CardTitle>PDF Data Ingestion</CardTitle>
+                    <CardDescription>Parse and index JEE PDFs (questions and solutions).</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div 
+                        className="flex flex-col items-center justify-center text-center text-muted-foreground py-12 border-2 border-dashed rounded-lg relative"
+                    >
+                        <input
+                            type="file"
+                            accept="application/pdf"
+                            onChange={handleFileChange}
+                            disabled={isProcessing}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            id="pdf-upload"
+                        />
+                         <label htmlFor="pdf-upload" className={`flex flex-col items-center justify-center ${isProcessing ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                            {isProcessing ? (
+                                <Loader2 className="w-16 h-16 mb-4 animate-spin" />
+                            ) : (
+                                <UploadCloud className="w-16 h-16 mb-4" />
+                            )}
+                            <p>{isProcessing ? 'Processing PDF...' : 'Click or drag & drop to upload'}</p>
+                            <p className="text-xs mt-2">This feature is available only to the administrator.</p>
+                         </label>
+                    </div>
+
+                    {result && (
+                        <Alert variant={result.success ? 'default' : 'destructive'} className="mt-4">
+                            {result.success ? <FileCheck className="h-4 w-4" /> : <FileX className="h-4 w-4" />}
+                            <AlertTitle>{result.success ? 'Processing Complete' : 'Processing Failed'}</AlertTitle>
+                            <AlertDescription>{result.message}</AlertDescription>
+                        </Alert>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
