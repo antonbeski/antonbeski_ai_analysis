@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Lightbulb,
   ImageIcon,
-  Settings,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -27,8 +26,6 @@ const navItems = [
   { href: '/practice', icon: Lightbulb, label: 'Practice' },
   { href: '/history', icon: History, label: 'History' },
 ];
-
-const settingsItem = { href: '/settings', icon: Settings, label: 'Settings' };
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -61,22 +58,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex flex-col gap-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Button
-              variant={pathname === settingsItem.href ? 'secondary' : 'ghost'}
-              className="w-full justify-start"
-              asChild
-            >
-              <Link href={settingsItem.href}>
-                <settingsItem.icon className="mr-2 h-4 w-4" />
-                {settingsItem.label}
-              </Link>
-            </Button>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarFooter className="flex flex-col gap-4" />
     </Sidebar>
   );
 }
