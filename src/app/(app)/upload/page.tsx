@@ -6,8 +6,11 @@ import { UploadCloud, FileCheck, FileX, Loader2 } from "lucide-react";
 import { processPdf } from '@/ai/flows/process-pdf';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuthContext } from '@/context/auth-context';
+import { AuthDialog } from '@/components/auth-dialog';
 
 export default function UploadPage() {
+    const { isAdmin, isLoading: isAuthLoading } = useAuthContext();
     const [isProcessing, setIsProcessing] = useState(false);
     const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -34,6 +37,18 @@ export default function UploadPage() {
             setIsProcessing(false);
         }
     };
+    
+    if (isAuthLoading) {
+        return (
+          <div className="flex h-full w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        );
+    }
+    
+    if (!isAdmin) {
+        return <AuthDialog />;
+    }
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

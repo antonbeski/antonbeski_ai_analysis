@@ -58,6 +58,14 @@
         "userId": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N PdfDocument)"
+        },
+        "storagePath": {
+            "type": "string",
+            "description": "The path to the file in Firebase Storage."
+        },
+        "downloadUrl": {
+            "type": "string",
+            "description": "The public download URL for the file."
         }
       },
       "required": [
@@ -65,8 +73,26 @@
         "title",
         "uploadDate",
         "fileSize",
-        "userId"
+        "userId",
+        "storagePath"
       ]
+    },
+    "PdfContent": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "PdfContent",
+        "type": "object",
+        "description": "Stores the extracted text content from a PDF document.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the content chunk."
+          },
+          "textContent": {
+            "type": "string",
+            "description": "A chunk of text extracted from the PDF."
+          }
+        },
+        "required": ["id", "textContent"]
     },
     "Question": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -270,6 +296,28 @@
         }
       },
       {
+        "path": "/users/{userId}/pdfDocuments/{pdfDocumentId}/content/{contentId}",
+        "definition": {
+            "entityName": "PdfContent",
+            "schema": { "$ref": "#/backend/entities/PdfContent" },
+            "description": "Stores extracted text content from a PDF, chunked for efficient querying.",
+            "params": [
+                {
+                    "name": "userId",
+                    "description": "The unique identifier for the user."
+                },
+                {
+                    "name": "pdfDocumentId",
+                    "description": "The unique identifier for the PDF document."
+                },
+                {
+                    "name": "contentId",
+                    "description": "The unique identifier for the text chunk."
+                }
+            ]
+        }
+      },
+      {
         "path": "/subjects/{subjectId}",
         "definition": {
           "entityName": "Subject",
@@ -386,6 +434,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, DBAC, and support secure list operations (QAPs). It leverages path-based ownership for user-specific data and denormalization to avoid `get()` calls in security rules. The taxonomy of subjects, chapters, and topics are segregated to ensure each level has its own security posture. The UserAnswer subcollection uses path-based ownership, nesting under the User, Question, and PDF document. This structure provides a clear hierarchy and supports efficient data retrieval and security rule implementation. Explicit denormalization of the `userId` and `pdfDocumentId` in the UserAnswer collection is critical for authorization independence, ensuring that access control can be enforced at the UserAnswer level without needing to fetch data from parent documents. Since questions are linked to PDF Documents and Topics, and UserAnswers are linked to Users and Questions, a deeply nested structure is used to explicitly represent these relationships."
+    "reasoning": "The Firestore structure is designed to ensure Authorization Independence, DBAC, and support secure list operations (QAPs). It leverages path-based ownership for user-specific data and denormalization to avoid `get()` calls in security rules. The taxonomy of subjects, chapters, and topics are segregated to ensure each level has its own security posture. The UserAnswer subcollection uses path-based ownership, nesting under the User, Question, and PDF document. This structure provides a clear hierarchy and supports efficient data retrieval and security rule implementation. Explicit denormalization of the `userId` and `pdfDocumentId` in the UserAnswer collection is critical for authorization independence, ensuring that access control can be enforced at the UserAnswer level without needing to fetch data from parent documents. Since questions are linked to PDF Documents and Topics, and UserAnswers are linked to Users and Questions, a deeply nested structure is used to explicitly represent these relationships. A new `content` subcollection is added under `pdfDocuments` to store extracted text, allowing for efficient RAG-based queries without hitting single-document size limits."
   }
 }

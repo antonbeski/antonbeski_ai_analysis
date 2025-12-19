@@ -17,6 +17,7 @@
  * Data Structure:
  * - `/users/{userId}`: Root for all data belonging to a single user.
  *   - `.../pdfDocuments/{pdfDocumentId}`: PDF documents uploaded by the user.
+ *     - `.../content/{contentId}`: Extracted text content from the PDF.
  *   - `.../userAnswers/{userAnswerId}`: User's specific answers to questions.
  * - `/subjects/{subjectId}`: Root for the public, read-only content taxonomy.
  *   - `.../chapters/{chapterId}`
@@ -134,11 +135,18 @@ service cloud.firestore {
        * @principle Enforces document ownership for all operations and validates relational integrity.
        */
       match /pdfDocuments/{pdfDocumentId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && hasValidOwnerFieldOnCreate(userId);
-        allow update: if isExistingOwner(userId) && areOwnerFieldsImmutable();
-        allow delete: if isExistingOwner(userId);
+        allow get, list, create, update, delete: if isOwner(userId);
+        
+        /**
+         * @description Controls access to the extracted text content of a PDF.
+         * @path /users/{userId}/pdfDocuments/{pdfDocumentId}/content/{contentId}
+         * @allow The owner ('user123') can read and write content for their own PDFs.
+         * @deny Another user cannot access this content.
+         * @principle Inherits ownership from the parent document.
+         */
+        match /content/{contentId} {
+            allow get, list, create, update, delete: if isOwner(userId);
+        }
       }
 
       /**

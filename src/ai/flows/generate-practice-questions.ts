@@ -13,6 +13,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { initializeFirebase } from '@/firebase';
+import { collectionGroup, getDocs, query, limit } from 'firebase/firestore';
+
 
 const GeneratePracticeQuestionsInputSchema = z.object({
   subject: z.string().describe('The subject of the practice questions (e.g., Physics, Chemistry, Math).'),
@@ -33,9 +36,32 @@ const GeneratePracticeQuestionsOutputSchema = z.object({
 export type GeneratePracticeQuestionsOutput = z.infer<typeof GeneratePracticeQuestionsOutputSchema>;
 
 async function getRelevantTextChunks(input: GeneratePracticeQuestionsInput): Promise<string> {
-  // TODO: Implement retrieval of relevant text chunks from indexed PDFs based on the input parameters.
-  // This is a placeholder; replace with actual implementation.
-  return `Relevant text chunks for ${input.subject}, ${input.chapter}, ${input.topic}, ${input.subtopic}.`;
+  const { firestore } = initializeFirebase();
+  const userId = 'admin-user'; // Placeholder
+
+  try {
+    // Query the 'content' subcollection across all user documents for simplicity.
+    // In a real app, you'd likely target a specific user's documents.
+    const contentQuery = query(collectionGroup(firestore, 'content'), limit(1));
+    const querySnapshot = await getDocs(contentQuery);
+    
+    if (querySnapshot.empty) {
+      return "No indexed PDF content found to generate questions from.";
+    }
+
+    // Combine text from all found content documents.
+    // A real implementation would be more sophisticated, selecting chunks based on topic.
+    const allText = querySnapshot.docs.map(doc => doc.data().textContent).join('\n\n');
+    
+    // For this example, we'll just return a snippet.
+    const snippet = allText.substring(0, 4000); // Use a chunk of the text
+    
+    return snippet;
+
+  } catch (error) {
+    console.error("Error fetching text chunks from Firestore:", error);
+    return "Error retrieving content from a PDF. Please ensure PDFs are uploaded and indexed.";
+  }
 }
 
 const generatePracticeQuestionsPrompt = ai.definePrompt({
@@ -52,7 +78,7 @@ const generatePracticeQuestionsPrompt = ai.definePrompt({
   output: {schema: GeneratePracticeQuestionsOutputSchema},
   prompt: `You are an expert educator creating practice questions for JEE students.
 
-  Based on the following context and user history analysis, generate a practice question.
+  Based on the following context from an uploaded PDF, generate a practice question.
 
   Context: {{{relevantTextChunks}}}
   User History Analysis: {{{userHistoryAnalysis}}}
@@ -63,8 +89,8 @@ const generatePracticeQuestionsPrompt = ai.definePrompt({
   Subtopic: {{{subtopic}}}
   Question Type: {{{questionType}}}
 
-  When creating multiple-choice questions, formulate plausible options.
-  Ensure that options are related to the question and could be potential answers or common mistakes.
+  When creating multiple-choice questions, formulate plausible options that are related to the question and represent common mistakes.
+  The question should be challenging and relevant to the JEE exam level.
 
   If the question type is 'multiple-choice', the output should include both the question and an array of options.
   If the question type is 'free-response', the output should only include the question.

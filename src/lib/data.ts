@@ -75,6 +75,7 @@ export const aiAnalysis = {
 export const practiceQuestions: PracticeQuestion[] = [
     {
         id: 'q1',
+        topicId: 'kinematics',
         question: "A projectile is thrown with an initial velocity of 20 m/s at an angle of 60° with the horizontal. What is the maximum height reached by the projectile? (g = 10 m/s²)",
         options: ["10 m", "15 m", "20 m", "25 m"],
         correctAnswer: "15 m",
@@ -82,6 +83,7 @@ export const practiceQuestions: PracticeQuestion[] = [
     },
     {
         id: 'q2',
+        topicId: 'dynamics',
         question: "A block of mass 5 kg is placed on a rough horizontal surface. A force of 20 N is applied on the block. If the coefficient of friction is 0.2, find the acceleration of the block. (g = 10 m/s²)",
         visualAidUrl: "https://picsum.photos/seed/geometry1/500/500",
         options: ["1 m/s²", "2 m/s²", "3 m/s²", "0 m/s²"],

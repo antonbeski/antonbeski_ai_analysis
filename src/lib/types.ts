@@ -39,4 +39,5 @@ export type PracticeQuestion = {
   options?: string[];
   correctAnswer: string;
   solution: string;
+  topicId: string;
 };

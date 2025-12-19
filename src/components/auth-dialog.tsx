@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -12,20 +12,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AuthContext } from '@/context/auth-context';
+import { useAuthContext } from '@/context/auth-context';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { XCircle } from 'lucide-react';
+import { XCircle, Loader2 } from 'lucide-react';
 
 export function AuthDialog() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { login } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuthContext();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError(null);
-    if (!login(password)) {
+    setIsLoading(true);
+    const success = await login(password);
+    if (!success) {
       setError('Incorrect password. Please try again.');
     }
+    setIsLoading(false);
   };
 
   return (
@@ -47,6 +51,7 @@ export function AuthDialog() {
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               required
+              disabled={isLoading}
             />
           </div>
           {error && (
@@ -58,8 +63,9 @@ export function AuthDialog() {
           )}
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={handleLogin}>
-            Unlock
+          <Button className="w-full" onClick={handleLogin} disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading ? 'Unlocking...' : 'Unlock'}
           </Button>
         </CardFooter>
       </Card>
