@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { processPdf } from '@/ai/flows/process-pdf';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AuthDialog } from '@/components/auth-dialog';
 
 
 type QuizState = 'not_started' | 'in_progress' | 'finished';
@@ -67,11 +68,7 @@ export default function PracticePage() {
   }
   
   if (!isAdmin) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <p className='text-muted-foreground'>This page is for admins only.</p>
-      </div>
-    );
+    return <AuthDialog />;
   }
 
   if (quizState === 'in_progress' && currentTopic) {
@@ -136,7 +133,6 @@ export default function PracticePage() {
                                     <UploadCloud className="w-16 h-16 mb-4" />
                                 )}
                                 <p>{isProcessing ? 'Processing PDF...' : 'Click or drag & drop to upload'}</p>
-                                <p className="text-xs mt-2">This feature is available only to the administrator.</p>
                              </label>
                         </div>
 
