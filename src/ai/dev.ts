@@ -8,4 +8,3 @@ import '@/ai/flows/detect-improvement-over-time';
 import '@/ai/flows/analyze-user-performance';
 import '@/ai/flows/provide-time-strategy-insights';
 import '@/ai/flows/generate-visual-aid';
-import '@/ai/flows/process-pdf';
