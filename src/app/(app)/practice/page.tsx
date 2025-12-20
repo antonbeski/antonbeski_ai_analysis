@@ -7,7 +7,7 @@ import { useAuthContext } from '@/context/auth-context';
 import { Loader2, UploadCloud, FileCheck, FileX } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { processPdf } from '@/ai/flows/process-pdf';
+import { processPdf } from '@/lib/pdf-processor';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AuthDialog } from '@/components/auth-dialog';
 
