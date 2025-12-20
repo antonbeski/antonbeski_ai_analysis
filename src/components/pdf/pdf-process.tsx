@@ -28,18 +28,25 @@ export function PDFProcess() {
     setResult(null);
 
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const base64Content = (reader.result as string).split(',')[1];
-        const response = await processPdf({
-          fileName: file.name,
-          fileContent: base64Content,
-        });
-        setResult(response);
-      };
+      const base64Content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          resolve((reader.result as string).split(',')[1]);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+      });
+
+      const response = await processPdf({
+        fileName: file.name,
+        fileContent: base64Content,
+      });
+
+      setResult(response);
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
     }
