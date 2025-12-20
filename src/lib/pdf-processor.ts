@@ -6,7 +6,7 @@ import { initializeFirebase } from '@/firebase';
 
 async function extractPdfText(buffer: Uint8Array): Promise<string> {
     const pdfjs = await import('pdfjs-dist/build/pdf.js');
-    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
     const loadingTask = pdfjs.getDocument({ data: buffer });
     const pdf = await loadingTask.promise;

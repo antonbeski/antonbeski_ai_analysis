@@ -9,8 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "node -e \"const fs = require('fs'); const path = require('path'); if (fs.existsSync(path.dirname(require.resolve('pdfjs-dist/package.json')))) { const pdfjsDistPath = path.dirname(require.resolve('pdfjs-dist/package.json')); const pdfWorkerPath = path.join(pdfjsDistPath, 'legacy', 'build', 'pdf.worker.js'); const publicPath = path.join(__dirname, 'public'); if (!fs.existsSync(publicPath)) { fs.mkdirSync(publicPath, { recursive: true }); } fs.copyFileSync(pdfWorkerPath, path.join(publicPath, 'pdf.worker.js')); }\""
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
