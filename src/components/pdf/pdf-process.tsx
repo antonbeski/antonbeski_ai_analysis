@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { processPdf, ProcessPdfOutput } from '@/ai/flows/process-pdf';
+import { processPdf, ProcessPdfOutput } from '@/lib/pdf-processor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
