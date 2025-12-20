@@ -50,6 +50,7 @@ const ProcessPdfOutputSchema = z.object({
   message: z.string().describe('A message indicating the result of the processing.'),
   textLength: z.number().describe('The length of the extracted text.'),
   downloadUrl: z.string().optional().describe('The public URL of the uploaded PDF.'),
+  textContent: z.string().optional().describe('The extracted text from the PDF.'),
 });
 export type ProcessPdfOutput = z.infer<typeof ProcessPdfOutputSchema>;
 
@@ -103,6 +104,7 @@ const processPdfFlow = ai.defineFlow(
         message: `Successfully uploaded and processed ${input.fileName}.`,
         textLength: textContent.length,
         downloadUrl: downloadUrl,
+        textContent: textContent,
       };
     } catch (error: any) {
       console.error('Failed to process PDF:', error);
