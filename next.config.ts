@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // In-line loader for pdf.worker.min.mjs
+    config.module.rules.push({
+      test: /pdf\.worker\.min\.mjs/,
+      type: "asset/source",
+    });
+    return config;
+  },
 };
 
 export default nextConfig;

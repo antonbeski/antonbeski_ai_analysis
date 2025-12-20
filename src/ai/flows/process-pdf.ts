@@ -10,10 +10,35 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import pdf from 'pdf-parse';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { initializeFirebase } from '@/firebase';
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+
+async function extractPdfText(buffer: Uint8Array): Promise<string> {
+    // pdfjs-dist is a large library, so we're importing it dynamically.
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+    const loadingTask = getDocument({ data: buffer });
+    const pdf = await loadingTask.promise;
+  
+    let fullText = "";
+  
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const content = await page.getTextContent();
+  
+      const pageText = content.items
+        .map((item: any) => item.str)
+        .join(" ");
+  
+      fullText += pageText + "\\n";
+    }
+  
+    return fullText.trim();
+}
+
 
 const ProcessPdfInputSchema = z.object({
   fileName: z.string().describe('The name of the uploaded PDF file.'),
@@ -64,9 +89,8 @@ const processPdfFlow = ai.defineFlow(
           downloadUrl: downloadUrl,
       });
 
-      // 3. Parse PDF to extract text
-      const data = await pdf(pdfBuffer);
-      const textContent = data.text;
+      // 3. Parse PDF to extract text using pdfjs-dist
+      const textContent = await extractPdfText(pdfBuffer);
       
       // 4. Store extracted text in a subcollection
       // This is a simplified approach. For large PDFs, you'd chunk the text.
