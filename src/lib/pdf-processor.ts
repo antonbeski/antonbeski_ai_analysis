@@ -5,11 +5,10 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/fire
 import { initializeFirebase } from '@/firebase';
 
 async function extractPdfText(buffer: Uint8Array): Promise<string> {
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
-    const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.js');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+    const pdfjs = await import('pdfjs-dist/build/pdf.js');
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-    const loadingTask = pdfjsLib.getDocument({ data: buffer });
+    const loadingTask = pdfjs.getDocument({ data: buffer });
     const pdf = await loadingTask.promise;
   
     let fullText = "";
