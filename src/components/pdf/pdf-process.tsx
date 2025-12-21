@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { processPdf, ProcessPdfOutput } from '@/lib/pdf-processor';
+import pdfParse from 'pdf-parser-client-side';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,42 +11,31 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export function PDFProcess() {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<ProcessPdfOutput | null>(null);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFile(e.target.files[0]);
+      setExtractedText(null);
+      setError(null);
     }
   };
 
-  const handleSubmit = async () => {
+  const handleParse = async () => {
     if (!file) return;
 
     setIsLoading(true);
     setError(null);
-    setResult(null);
+    setExtractedText(null);
 
     try {
-      const base64Content = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          resolve((reader.result as string).split(',')[1]);
-        };
-        reader.onerror = (error) => {
-          reject(error);
-        };
-      });
-
-      const response = await processPdf({
-        fileName: file.name,
-        fileContent: base64Content,
-      });
-
-      setResult(response);
+      const arrayBuffer = await file.arrayBuffer();
+      const data = await pdfParse(arrayBuffer);
+      setExtractedText(data.text);
     } catch (e: any) {
-      setError(e.message || 'An unknown error occurred.');
+      setError(e.message || 'An unknown error occurred while parsing the PDF.');
+      console.error("Error parsing PDF:", e);
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +44,7 @@ export function PDFProcess() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <h2 className="text-3xl font-bold tracking-tight font-headline">
-        PDF Processing
+        PDF Text Extractor
       </h2>
       <div className="space-y-4">
         <Card>
@@ -65,10 +54,10 @@ export function PDFProcess() {
           <CardContent className="space-y-4">
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="pdf">PDF File</Label>
-              <Input id="pdf" type="file" onChange={handleFileChange} />
+              <Input id="pdf" type="file" accept="application/pdf" onChange={handleFileChange} />
             </div>
-            <Button onClick={handleSubmit} disabled={!file || isLoading}>
-              {isLoading ? 'Processing...' : 'Process PDF'}
+            <Button onClick={handleParse} disabled={!file || isLoading}>
+              {isLoading ? 'Extracting...' : 'Extract Text'}
             </Button>
           </CardContent>
         </Card>
@@ -84,31 +73,17 @@ export function PDFProcess() {
           </Card>
         )}
 
-        {result && (
+        {extractedText !== null && (
           <Card>
             <CardHeader>
-              <CardTitle>Result</CardTitle>
+              <CardTitle>Extracted Text</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>{result.message}</p>
-              <p>Text Length: {result.textLength}</p>
-              {result.downloadUrl && (
-                <p>
-                  <a
-                    href={result.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Download PDF
-                  </a>
-                </p>
-              )}
-              {result.textContent && (
-                <ScrollArea className="h-72 w-full rounded-md border p-4 mt-4">
-                  <pre>{result.textContent}</pre>
-                </ScrollArea>
-              )}
+              <ScrollArea className="h-72 w-full rounded-md border p-4">
+                <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                  {extractedText}
+                </pre>
+              </ScrollArea>
             </CardContent>
           </Card>
         )}
