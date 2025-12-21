@@ -5,6 +5,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { FileText, Upload, Copy, Download, Trash2, Loader2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Set workerSrc to use the unpkg CDN. This is required by pdfjs-dist.
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export function PDFProcess() {
@@ -13,20 +14,6 @@ export function PDFProcess() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    processFile(file);
-  };
-  
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    processFile(file);
-  }
 
   const processFile = async (file: File) => {
     if (file.type !== 'application/pdf') {
@@ -40,9 +27,9 @@ export function PDFProcess() {
     setCopied(false);
     setExtractedText('');
 
-
     try {
       const arrayBuffer = await file.arrayBuffer();
+      // We now use the reliable pdfjs-dist library to extract text.
       const text = await extractTextFromPDF(arrayBuffer);
       
       if (!text.trim()) {
@@ -51,20 +38,46 @@ export function PDFProcess() {
         setExtractedText(text);
       }
     } catch (err) {
-      setError('Failed to extract text from PDF. Please try another file.');
+      setError('Failed to extract text from PDF. The file might be corrupted or in an unsupported format.');
       console.error(err);
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    processFile(file);
+  };
+  
+  const preventDefaults = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  /**
+   * Extracts text from a PDF using pdfjs-dist.
+   * @param data The PDF file data as an ArrayBuffer.
+   * @returns A promise that resolves with the extracted text.
+   */
   const extractTextFromPDF = async (data: ArrayBuffer): Promise<string> => {
     const loadingTask = pdfjsLib.getDocument({ data });
     const pdf = await loadingTask.promise;
     let fullText = '';
+
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
+        // The items in textContent are structured, we need to extract 'str' property
         const pageText = textContent.items.map(item => ('str' in item ? item.str : '')).join(' ');
         fullText += pageText + '\n\n';
     }
@@ -98,11 +111,6 @@ export function PDFProcess() {
     if(fileInput) {
         fileInput.value = '';
     }
-  };
-  
-  const preventDefaults = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
   };
 
   return (
