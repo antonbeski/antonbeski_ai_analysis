@@ -5,10 +5,6 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/fire
 import { initializeFirebase } from '@/firebase';
 import * as pdfjs from 'pdfjs-dist/build/pdf.mjs';
 
-// The worker is not used in Node.js, so we don't need to set workerSrc.
-// We may need to import the worker for bundlers to be happy.
-await import('pdfjs-dist/build/pdf.worker.mjs');
-
 async function extractPdfText(buffer: Uint8Array): Promise<string> {
     const loadingTask = pdfjs.getDocument({ 
       data: buffer,
