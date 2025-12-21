@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import pdfParse from 'pdf-parser-client-side';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set the workerSrc to avoid build errors with Next.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export function PDFProcess() {
   const [file, setFile] = useState<File | null>(null);
@@ -31,8 +34,18 @@ export function PDFProcess() {
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const data = await pdfParse(arrayBuffer);
-      setExtractedText(data.text);
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => ('str' in item ? item.str : '')).join(' ');
+        fullText += pageText + '\n\n';
+      }
+      setExtractedText(fullText.trim());
+
     } catch (e: any) {
       setError(e.message || 'An unknown error occurred while parsing the PDF.');
       console.error("Error parsing PDF:", e);
