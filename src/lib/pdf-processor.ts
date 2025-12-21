@@ -3,9 +3,9 @@
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { initializeFirebase } from '@/firebase';
+import * as pdfjs from 'pdfjs-dist';
 
 async function extractPdfText(buffer: Uint8Array): Promise<string> {
-    const pdfjs = await import('pdfjs-dist/build/pdf.js');
     pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
     const loadingTask = pdfjs.getDocument({ data: buffer });
