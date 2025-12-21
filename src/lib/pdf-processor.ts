@@ -3,12 +3,18 @@
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { initializeFirebase } from '@/firebase';
-import * as pdfjs from 'pdfjs-dist';
+import * as pdfjs from 'pdfjs-dist/build/pdf.mjs';
+
+// The worker is not used in Node.js, so we don't need to set workerSrc.
+// We may need to import the worker for bundlers to be happy.
+await import('pdfjs-dist/build/pdf.worker.mjs');
 
 async function extractPdfText(buffer: Uint8Array): Promise<string> {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-    const loadingTask = pdfjs.getDocument({ data: buffer });
+    const loadingTask = pdfjs.getDocument({ 
+      data: buffer,
+      // Explicitly disable the worker in the server environment
+      worker: false 
+    });
     const pdf = await loadingTask.promise;
   
     let fullText = "";
@@ -21,7 +27,7 @@ async function extractPdfText(buffer: Uint8Array): Promise<string> {
         .map((item: any) => item.str)
         .join(" ");
   
-      fullText += pageText + "\\n";
+      fullText += pageText + "\n";
     }
   
     return fullText.trim();
