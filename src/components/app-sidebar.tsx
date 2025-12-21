@@ -6,7 +6,7 @@ import {
   History,
   LayoutDashboard,
   Lightbulb,
-  ImageIcon,
+  FileText,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -24,6 +24,7 @@ import { Button } from './ui/button';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/practice', icon: Lightbulb, label: 'Practice' },
+  { href: '/pdf', icon: FileText, label: 'PDF Extractor' },
   { href: '/history', icon: History, label: 'History' },
 ];
 
